@@ -7,7 +7,7 @@ services:
     environment: 
       POSTGRES_USER: airflow
       POSTGRES_PASSWORD: airflowty
-      POSTGRES_DB: airflowdocker exec -it airflow airflow users create \ --username admin \ --firstname Admin \ --lastname User \ --role Admin \ --email admin@example.com \ --password admin
+      POSTGRES_DB: airflow
     ports:
       - "5432:5432"
     volumes:
