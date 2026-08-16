@@ -6,13 +6,17 @@ import json
 import time
 import os
 
-# --- Step 1: Download events.csv from R2 (once, at script start) ---
+# --- Config ---
 R2_ENDPOINT = "https://5c41792aa0e026df91d7c43f85e6f82b.r2.cloudflarestorage.com"
 R2_ACCESS_KEY = "a738f997bf3611972cdfe1257ec5ffcd"
 R2_SECRET_KEY = "a4c6aed7e821f4d2d1cadba977e876278f9a538d0bfaca99c8e76201aa8761d2"
 BUCKET = "projectcsv"
 KEY = "E-COMMERCE/events.csv"
 
+BATCH_SIZE = 10
+PROGRESS_FILE = "producer_progress.txt"   # tracks how many rows sent so far
+
+# --- Step 1: Download events.csv from R2 ---
 s3 = boto3.client(
     's3',
     endpoint_url=R2_ENDPOINT,
@@ -24,10 +28,24 @@ print("Downloading events.csv from R2...")
 obj = s3.get_object(Bucket=BUCKET, Key=KEY)
 df = pd.read_csv(BytesIO(obj['Body'].read())).sort_values('timestamp').reset_index(drop=True)
 
-df = df.head(10)
-print(f"TEST MODE: sending {len(df)} events only.")
+# --- Step 2: Figure out where we left off ---
+if os.path.exists(PROGRESS_FILE):
+    with open(PROGRESS_FILE, "r") as f:
+        last_sent_index = int(f.read().strip())
+else:
+    last_sent_index = 0
 
-# --- Step 2: Set up Kafka producer ---
+start_idx = last_sent_index
+end_idx = min(last_sent_index + BATCH_SIZE, len(df))
+
+if start_idx >= len(df):
+    print("All rows have already been sent. Nothing left to produce.")
+    exit()
+
+df_batch = df.iloc[start_idx:end_idx]
+print(f"Sending rows {start_idx} to {end_idx - 1} ({len(df_batch)} events)...")
+
+# --- Step 3: Set up Kafka producer ---
 producer = KafkaProducer(
     bootstrap_servers='localhost:9092',
     key_serializer=lambda k: str(k).encode('utf-8'),
@@ -40,11 +58,11 @@ producer = KafkaProducer(
 TOPIC = 'retailrocket-events'
 SPEED_FACTOR = 100000
 
-# --- Step 3: Replay rows into Kafka, preserving real timing (sped up) ---
+# --- Step 4: Send this batch ---
 prev_ts = None
 sent_count = 0
 
-for _, row in df.iterrows():
+for _, row in df_batch.iterrows():
     current_ts = row['timestamp']
 
     if prev_ts is not None:
@@ -65,9 +83,12 @@ for _, row in df.iterrows():
     sent_count += 1
     prev_ts = current_ts
 
-    if sent_count % 50000 == 0:
-        print(f"Sent {sent_count} events...")
-
 producer.flush()
 producer.close()
-print(f"Done. Total events sent: {sent_count}")
+
+# --- Step 5: Save progress for next run ---
+with open(PROGRESS_FILE, "w") as f:
+    f.write(str(end_idx))
+
+print(f"Done. Sent {sent_count} events (rows {start_idx}-{end_idx - 1}).")
+print(f"Next run will start from row {end_idx}.")
