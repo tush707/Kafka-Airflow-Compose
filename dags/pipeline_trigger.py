@@ -1,5 +1,5 @@
 from airflow import DAG
-from airflow.providers.databricks.operators.databricks import DatabricksNotebookOperator
+from airflow.providers.databricks.operators.databricks import DatabricksSubmitRunOperator
 from datetime import datetime, timedelta
 
 default_args = {
@@ -18,9 +18,12 @@ with DAG(
     tags=["retailrocket", "poc"],
 ) as dag:
 
-    trigger_pipeline_update = DatabricksNotebookOperator(
+    trigger_pipeline_update = DatabricksSubmitRunOperator(
         task_id="trigger_declarative_pipeline",
         databricks_conn_id="databricks_default",
-        pipeline_id="your_pipeline_id_here",
-        wait_for_termination=True,
+        json={
+            "pipeline_task": {
+                "pipeline_id": "your_pipeline_id_here"
+            }
+        },
     )
