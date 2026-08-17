@@ -20,6 +20,7 @@ services:
       - postgres 
     environment:
       AIRFLOW__DATABASE__SQL_ALCHEMY_CONN: postgresql+psycopg2://airflow:airflowty@postgres/airflow
+      _PIP_ADDITIONAL_REQUIREMENTS: apache-airflow-providers-databricks
     ports:  
       - "8080:8080"
     volumes:
