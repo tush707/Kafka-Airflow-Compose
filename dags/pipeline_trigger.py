@@ -22,8 +22,8 @@ with DAG(
         task_id="trigger_declarative_pipeline",
         databricks_conn_id="databricks_default",
         json={
-            "pipeline_task": {
-                "pipeline_id": "your_pipeline_id_here"
+            "notebook_task": {
+                "notebook_path": "/Users/tusharyadav2001.ty@gmail.com/test_airflow_conn"
             }
         },
     )
