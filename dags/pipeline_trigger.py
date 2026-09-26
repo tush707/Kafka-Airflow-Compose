@@ -21,9 +21,10 @@ with DAG(
     trigger_pipeline_update = DatabricksSubmitRunOperator(
         task_id="trigger_declarative_pipeline",
         databricks_conn_id="databricks_default",
-        json={
-            "notebook_task": {
-                "notebook_path": "/Users/tusharyadav2001.ty@gmail.com/test_airflow_conn"
-            }
+
+        notebook_task={
+            "notebook_path": "/Users/tusharyadav2001.ty@gmail.com/test_airflow_conn"
         },
+
+        performance_target="STANDARD",
     )
