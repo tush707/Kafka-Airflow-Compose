@@ -21,10 +21,16 @@ with DAG(
     trigger_pipeline_update = DatabricksSubmitRunOperator(
         task_id="trigger_declarative_pipeline",
         databricks_conn_id="databricks_default",
-
-        notebook_task={
-            "notebook_path": "/Users/tusharyadav2001.ty@gmail.com/test_airflow_conn"
+        json={
+            "run_name": "airflow_test_airflow_conn",
+            "tasks": [
+                {
+                    "task_key": "run_notebook",
+                    "notebook_task": {
+                        "notebook_path": "/Users/tusharyadav2001.ty@gmail.com/test_airflow_conn",
+                        "source": "WORKSPACE",
+                    },
+                }
+            ],
         },
-
-        performance_target="STANDARD",
     )
