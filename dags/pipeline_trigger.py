@@ -22,13 +22,12 @@ with DAG(
         task_id="trigger_declarative_pipeline",
         databricks_conn_id="databricks_default",
         json={
-            "run_name": "airflow_test_airflow_conn",
+            "run_name": "retailrocket_pipeline_run",
             "tasks": [
                 {
-                    "task_key": "run_notebook",
-                    "notebook_task": {
-                        "notebook_path": "/Users/tusharyadav2001.ty@gmail.com/test_airflow_conn",
-                        "source": "WORKSPACE",
+                    "task_key": "run_pipeline",
+                    "pipeline_task": {
+                        "pipeline_id": "f20b749b-6d31-4e31-9265-88de434c01ba"
                     },
                 }
             ],
