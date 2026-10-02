@@ -27,7 +27,7 @@ with DAG(
                 {
                     "task_key": "run_pipeline",
                     "pipeline_task": {
-                        "pipeline_id": "f20b749b-6d31-4e31-9265-88de434c01ba"
+                        "pipeline_id": "7fb601a8-a907-4367-851f-608bf87d4fa9"
                     },
                 }
             ],
